@@ -19,12 +19,31 @@ type Context struct {
 	business   Business
 	req        interface{}
 	resp       interface{}
+	resMeta    map[string]string
 	err        error
 	code       int64
 	info       string
 	clientIP   string
+	method     string
+	service    string
 }
 
+func (ctx *Context) ResMeta() map[string]string {
+	return ctx.resMeta
+}
+func (ctx *Context) BusinessErr() error {
+	return ctx.err
+}
+func (ctx *Context) Info() string {
+	return ctx.info
+}
+func (ctx *Context) Code() int64 {
+	return ctx.code
+}
+
+func (ctx *Context) Response() interface{} {
+	return ctx.resp
+}
 func (ctx *Context) Next() {
 	ctx.index++
 	if ctx.index <= int8(len(ctx.handlers)) {
@@ -64,14 +83,39 @@ func (ctx *Context) Value(key interface{}) interface{} {
 	}
 	return ctx.parent.Value(key)
 }
-func Reset(ctx *Context, goCtx context.Context, req interface{}, ip string, _ map[string][]string) {
+func Reset(ctx *Context, goCtx context.Context, req interface{}, ip string) {
 	ctx.parent = goCtx
 	ctx.index = 0
 	ctx.req = req
 	ctx.resp = nil
+	ctx.resMeta = nil
 	ctx.data = nil
 	ctx.err = nil
 	ctx.info = ""
 	ctx.code = 0
 	ctx.clientIP = ip
+}
+
+func New(
+	business Business,
+	handlers []Middleware,
+	service, method string,
+	errHandler ErrHandler,
+) *Context {
+	return &Context{
+		parent:     nil,
+		data:       nil,
+		index:      0,
+		handlers:   handlers,
+		errHandler: errHandler,
+		business:   business,
+		req:        nil,
+		resp:       nil,
+		err:        nil,
+		code:       0,
+		info:       "",
+		clientIP:   "",
+		method:     method,
+		service:    service,
+	}
 }
