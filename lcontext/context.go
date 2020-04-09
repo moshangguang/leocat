@@ -22,6 +22,7 @@ type Context struct {
 	err        error
 	code       int64
 	info       string
+	clientIP   string
 }
 
 func (ctx *Context) Next() {
@@ -31,9 +32,10 @@ func (ctx *Context) Next() {
 		return
 	}
 	ctx.resp, ctx.err = ctx.business(ctx, ctx.req)
-	if ctx.err != nil && ctx.errHandler != nil {
-		ctx.code, ctx.info, ctx.err = ctx.errHandler(ctx, ctx.err)
+	if ctx.err == nil || ctx.errHandler == nil {
+		return
 	}
+	ctx.code, ctx.info, ctx.err = ctx.errHandler(ctx, ctx.err)
 }
 func (ctx *Context) Abort() {
 	ctx.index = abortIndex
@@ -61,4 +63,15 @@ func (ctx *Context) Value(key interface{}) interface{} {
 		return v
 	}
 	return ctx.parent.Value(key)
+}
+func Reset(ctx *Context, goCtx context.Context, req interface{}, ip string, _ map[string][]string) {
+	ctx.parent = goCtx
+	ctx.index = 0
+	ctx.req = req
+	ctx.resp = nil
+	ctx.data = nil
+	ctx.err = nil
+	ctx.info = ""
+	ctx.code = 0
+	ctx.clientIP = ip
 }
