@@ -14,7 +14,7 @@ type Method interface {
 	InType() reflect.Type
 	OutType() reflect.Type
 	SetErrHandle(errHandler lcontext.ErrHandler)
-	SetHandlers(handlers []lcontext.Middleware)
+	SetChains(handlers []lcontext.Middleware)
 	Lock()
 	Exec(ctx context.Context, req interface{}, ip string) (resp interface{}, code int64, info string, err error)
 }
@@ -24,7 +24,7 @@ type method struct {
 	name        string
 	service     string
 	business    lcontext.Business
-	handlers    []lcontext.Middleware
+	chains      []lcontext.Middleware
 	pool        *sync.Pool
 	errHandler  lcontext.ErrHandler
 	inType      reflect.Type
@@ -55,14 +55,14 @@ func (m *method) SetErrHandle(errHandler lcontext.ErrHandler) {
 	m.errHandler = errHandler
 }
 
-func (m *method) SetHandlers(handlers []lcontext.Middleware) {
+func (m *method) SetChains(chains []lcontext.Middleware) {
 	if m.lock {
 		return
 	}
-	if len(handlers) == 0 {
+	if len(chains) == 0 {
 		return
 	}
-	m.handlers = handlers
+	m.chains = chains
 }
 
 func (m *method) Name() string {
@@ -97,14 +97,14 @@ func New(
 		name:       name,
 		service:    service,
 		business:   business,
-		handlers:   nil,
+		chains:     nil,
 		pool:       nil,
 		errHandler: nil,
 	}
 	m.pool = &sync.Pool{New: func() interface{} {
 		return lcontext.New(
 			m.business,
-			m.handlers,
+			m.chains,
 			m.service,
 			m.name,
 			m.errHandler,

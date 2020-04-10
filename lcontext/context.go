@@ -14,7 +14,7 @@ type Context struct {
 	parent     context.Context
 	data       map[interface{}]interface{}
 	index      int8
-	handlers   []Middleware
+	chains     []Middleware
 	errHandler ErrHandler
 	business   Business
 	req        interface{}
@@ -46,8 +46,8 @@ func (ctx *Context) Response() interface{} {
 }
 func (ctx *Context) Next() {
 	ctx.index++
-	if ctx.index <= int8(len(ctx.handlers)) {
-		ctx.handlers[ctx.index-1](ctx)
+	if ctx.index <= int8(len(ctx.chains)) {
+		ctx.chains[ctx.index-1](ctx)
 		return
 	}
 	ctx.resp, ctx.err = ctx.business(ctx, ctx.req)
@@ -98,7 +98,7 @@ func Reset(ctx *Context, goCtx context.Context, req interface{}, ip string) {
 
 func New(
 	business Business,
-	handlers []Middleware,
+	chains []Middleware,
 	service, method string,
 	errHandler ErrHandler,
 ) *Context {
@@ -106,7 +106,7 @@ func New(
 		parent:     nil,
 		data:       nil,
 		index:      0,
-		handlers:   handlers,
+		chains:     chains,
 		errHandler: errHandler,
 		business:   business,
 		req:        nil,
