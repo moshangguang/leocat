@@ -19,7 +19,7 @@ type Options struct {
 	ErrHandler lcontext.ErrHandler
 	Chains     []lcontext.Middleware
 	Services   []service.Service
-	Codec      codec.Codec
+	Cc         codec.Codec
 }
 
 type Option func(options *Options)
