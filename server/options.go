@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/moshangguang/leocat/lcontext"
+	"github.com/moshangguang/leocat/server/codec"
 	"github.com/moshangguang/leocat/service"
 )
 
@@ -18,6 +19,7 @@ type Options struct {
 	ErrHandler lcontext.ErrHandler
 	Chains     []lcontext.Middleware
 	Services   []service.Service
+	Codec      codec.Codec
 }
 
 type Option func(options *Options)
